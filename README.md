@@ -9,3 +9,9 @@ pip install -r requirements.txt
 brew install ffmpeg
 ```
 
+### Usage
+
+```
+python3 main.py <youtubelink> <outfile>
+```
+

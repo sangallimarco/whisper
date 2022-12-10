@@ -2,17 +2,19 @@ import pytube
 from moviepy.editor import VideoFileClip
 import pywhisper
 import os
+import sys
 # import static_ffmpeg
-
 # https://github.com/openai/whisper
 
 def download_video(url):
+    print("Downloading Video...")
     video = pytube.YouTube(url)
     stream = video.streams.get_by_itag(18)
     stream.download()
     return stream.default_filename
 
 def convert_to_mp3(filename):
+    print("Extracting Audio...")
     clip = VideoFileClip(filename)
     name = filename[:-4]+ ".mp3"
     clip.audio.write_audiofile(name)
@@ -21,19 +23,28 @@ def convert_to_mp3(filename):
 
 def AudiotoText(filename):
     print("Transcribing...")
-    model = pywhisper.load_model("tiny")
+    model = pywhisper.load_model("base")
     result = model.transcribe(filename)
-    sonuc = result["text"]
-    return sonuc
+    text = result["text"]
+    return text
 
 
-def main(url):
-    print("Initializing FFMPEG...")
+def main(url, destination):
+    # print("Initializing FFMPEG...")
     # static_ffmpeg.add_paths()
-    fileName = download_video(url)
-    mp3File = convert_to_mp3(fileName)
+    videoFile = download_video(url)
+    mp3File = convert_to_mp3(videoFile)
     result = AudiotoText(mp3File)
-    print(result)
+    
+    with open(destination, 'w') as f:
+        f.write(result)
+        f.close()
+
+    os.unlink(videoFile)
+    os.unlink(mp3File)
+
 
 if __name__ == "__main__":
-    main('https://www.youtube.com/watch?v=WHoWGNQRXb0')
+    video = sys.argv[1]
+    destination = sys.argv[2]
+    main(video, destination)
